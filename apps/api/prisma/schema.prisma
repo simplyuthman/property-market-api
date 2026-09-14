@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Agent {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  phone     String
+  city      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  listings  Listing[]
+
+  @@index([city])
+}
+
+model Listing {
+  id          String            @id @default(cuid())
+  title       String
+  description String
+  price       Int
+  category    Category
+  bedrooms    Int
+  bathrooms   Int
+  city        String
+  address     String
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  agentId     String
+  agent       Agent             @relation(fields: [agentId], references: [id])
+  viewings    PropertyViewing[]
+
+  @@index([city])
+  @@index([price])
+  @@index([category])
+  @@index([agentId])
+}
+
+model PropertyViewing {
+  id           String        @id @default(cuid())
+  visitorName  String
+  visitorEmail String
+  scheduledAt  DateTime
+  status       ViewingStatus @default(scheduled)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  listingId    String
+  listing      Listing       @relation(fields: [listingId], references: [id])
+
+  @@index([listingId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+enum Category {
+  sale
+  rent
+}
+
+enum ViewingStatus {
+  scheduled
+  completed
+  cancelled
+}
