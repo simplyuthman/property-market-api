@@ -88,49 +88,50 @@ async function main() {
 
   console.log(`Created/Verified ${createdAgents.length} agents.`);
 
-  // 2. Seed Listings (350 listings)
+  // 2. Seed Listings (350 listings) — built in memory, inserted in one batch
   console.log("Seeding listings...");
   const categories: Category[] = ["sale", "rent"];
 
-  const createdListings = [];
-  for (let i = 0; i < 350; i++) {
+  const listingData = Array.from({ length: 350 }, () => {
     const agent = faker.helpers.arrayElement(createdAgents);
     const category = faker.helpers.arrayElement(categories);
     const bedrooms = faker.number.int({ min: 1, max: 5 });
     const bathrooms = faker.number.int({ min: 1, max: Math.min(bedrooms + 1, 4) });
     const style = faker.helpers.arrayElement(PROPERTY_STYLES);
 
-    // Price in USD cents (Whole number integer)
-    // Rent: $1,200 - $8,500 / month -> 120,000 - 850,000 cents
-    // Sale: $175,000 - $3,500,000 -> 17,500,000 - 350,000,000 cents
+    // Price in USD cents (whole-number integer — never a float)
+    // Rent: $1,200–$8,500/month  → 120,000–850,000 cents
+    // Sale: $175,000–$3,500,000  → 17,500,000–350,000,000 cents
     const price =
       category === "rent"
         ? faker.number.int({ min: 1200, max: 8500 }) * 100
         : faker.number.int({ min: 175000, max: 3500000 }) * 100;
 
-    const listing = await prisma.listing.create({
-      data: {
-        title: `${style} with ${bedrooms} Bed in ${agent.city}`,
-        description: `${faker.lorem.paragraph(3)} Features include updated finishes, spacious layout, and convenient access to local transit and dining in ${agent.city}.`,
-        price,
-        category,
-        bedrooms,
-        bathrooms,
-        city: agent.city,
-        address: faker.location.streetAddress(),
-        agentId: agent.id,
-      },
-    });
-    createdListings.push(listing);
-  }
+    return {
+      title: `${style} with ${bedrooms} Bed in ${agent.city}`,
+      description: `${faker.lorem.paragraph(3)} Features include updated finishes, spacious layout, and convenient access to local transit and dining in ${agent.city}.`,
+      price,
+      category,
+      bedrooms,
+      bathrooms,
+      city: agent.city,
+      address: faker.location.streetAddress(),
+      agentId: agent.id,
+    };
+  });
 
+  // Single round-trip instead of 350 individual inserts
+  await prisma.listing.createMany({ data: listingData });
+
+  // Fetch back the created listings so we have their IDs for viewings
+  const createdListings = await prisma.listing.findMany({ select: { id: true } });
   console.log(`Created ${createdListings.length} listings.`);
 
-  // 3. Seed Viewings (600 viewings)
+  // 3. Seed Viewings (600 viewings) — built in memory, inserted in one batch
   console.log("Seeding viewings...");
   const now = new Date();
 
-  for (let i = 0; i < 600; i++) {
+  const viewingData = Array.from({ length: 600 }, () => {
     const listing = faker.helpers.arrayElement(createdListings);
     const isPast = faker.datatype.boolean();
 
@@ -138,7 +139,7 @@ async function main() {
       ? faker.date.recent({ days: 45 })
       : faker.date.soon({ days: 45 });
 
-    // Derive status logically from date per PRD
+    // Derive status logically from the scheduled date per PRD
     let status: ViewingStatus;
     if (scheduledAt < now) {
       status = faker.helpers.arrayElement(["completed", "cancelled"] as ViewingStatus[]);
@@ -146,16 +147,17 @@ async function main() {
       status = "scheduled";
     }
 
-    await prisma.propertyViewing.create({
-      data: {
-        listingId: listing.id,
-        visitorName: faker.person.fullName(),
-        visitorEmail: faker.internet.email().toLowerCase(),
-        scheduledAt,
-        status,
-      },
-    });
-  }
+    return {
+      listingId: listing.id,
+      visitorName: faker.person.fullName(),
+      visitorEmail: faker.internet.email().toLowerCase(),
+      scheduledAt,
+      status,
+    };
+  });
+
+  // Single round-trip instead of 600 individual inserts
+  await prisma.propertyViewing.createMany({ data: viewingData });
 
   console.log("Seeded 600 property viewings.");
   console.log("Database seeding completed successfully.");
