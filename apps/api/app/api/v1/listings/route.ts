@@ -63,6 +63,7 @@ export async function GET(request: NextRequest) {
       hasMore,
     });
   } catch (error) {
+    console.error("[GET /api/v1/listings]", error);
     return errorResponse("INTERNAL_SERVER_ERROR", "An unexpected error occurred.", 500);
   }
 }

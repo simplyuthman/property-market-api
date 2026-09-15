@@ -45,6 +45,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       listing: viewing.listing,
     });
   } catch (error) {
+    console.error("[GET /api/v1/viewings/:id]", error);
     return errorResponse("INTERNAL_SERVER_ERROR", "An unexpected error occurred.", 500);
   }
 }

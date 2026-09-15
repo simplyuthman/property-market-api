@@ -39,6 +39,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       listingCount: agent._count.listings,
     });
   } catch (error) {
+    console.error("[GET /api/v1/agents/:id]", error);
     return errorResponse("INTERNAL_SERVER_ERROR", "An unexpected error occurred.", 500);
   }
 }
