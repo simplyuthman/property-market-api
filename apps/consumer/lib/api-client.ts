@@ -39,8 +39,15 @@ export async function fetchFromApi<T>(path: string, searchParams?: Record<string
   });
 
   if (!response.ok) {
-    const errorBody = (await response.json()) as ApiError;
-    throw new Error(errorBody.error?.message || `HTTP ${response.status} error`);
+    // Attempt to parse the structured error envelope; fall back gracefully if
+    // the response body is not JSON (e.g. a Vercel HTML error page).
+    const text = await response.text();
+    try {
+      const errorBody = JSON.parse(text) as ApiError;
+      throw new Error(errorBody.error?.message || `HTTP ${response.status} error`);
+    } catch {
+      throw new Error(`HTTP ${response.status}: ${text.slice(0, 120)}`);
+    }
   }
 
   return response.json();
