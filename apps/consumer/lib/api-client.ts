@@ -1,4 +1,6 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+// Server-only: read at runtime, never baked into the client bundle.
+// Set API_BASE_URL in your hosting platform's environment variables.
+const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3000";
 
 export interface PaginationMeta {
   total: number;

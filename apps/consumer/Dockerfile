@@ -16,9 +16,6 @@ COPY apps/consumer ./apps/consumer
 
 WORKDIR /app/apps/consumer
 
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://api:3000}
-
 RUN npm run build
 
 FROM node:20-alpine AS runner
