@@ -1,4 +1,4 @@
-import { PrismaClient, Category, ViewingStatus } from "@prisma/client";
+import { PrismaClient, Category, ViewingStatus, type Agent } from "@prisma/client";
 import { faker } from "@faker-js/faker";
 
 const prisma = new PrismaClient();
@@ -72,7 +72,7 @@ async function main() {
     });
   }
 
-  const createdAgents = [];
+  const createdAgents: Agent[] = [];
   for (const agent of agentData) {
     const record = await prisma.agent.upsert({
       where: { email: agent.email },
