@@ -4,6 +4,12 @@
   "workspaces": [
     "apps/*"
   ],
+  "allowScripts": {
+    "@prisma/client": true,
+    "prisma": true,
+    "@prisma/engines": true,
+    "esbuild": true
+  },
   "scripts": {
     "dev": "npm --workspace=apps/api run dev",
     "dev:api": "npm --workspace=apps/api run dev",
