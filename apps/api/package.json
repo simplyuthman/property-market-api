@@ -9,11 +9,8 @@
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push --skip-generate",
-    "prisma:seed": "prisma db seed",
+    "prisma:seed": "tsx prisma/seed.ts",
     "test": "tsx --test tests/integration/*.test.ts"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.4.1",
